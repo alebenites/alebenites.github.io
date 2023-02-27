@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title> Buscador </title>
+	<style>
+	/* Style for search bar */
+#search-input {
+  width: 250px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-right: 10px;
+  font-size: 16px;
+}
+
+/* Style for add form button */
+#add-form-btn {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+#add-form-btn:hover {
+  background-color: #3e8e41;
+}
+/* Style for save form button */
+button[type="submit"] {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-right: 10px;
+  font-size: 16px;
+}
+
+button[type="submit"]:hover {
+  background-color: #3a8a41;
+}
+
+/* Style for delete form button */
+.delete-form-btn {
+  background-color: #f44336;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.delete-form-btn:hover {
+  background-color: #da190b;
+}
+
+.container {
+  text-align: center;
+}
+
+.search-container {
+   display: inline-block;
+}
+
+#form-container {
+   display: flex;
+   flex-wrap: wrap;
+   justify-content: flex-start;
+}
+
+#form-container form {
+   width: calc(100% / 3);}
+   margin: 10px;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+<div class="search-container">
+  <input type="text" id="search-input" placeholder="Buscar...">
+  <button id="add-form-btn">Add Form</button>
+</div>
+</div>
+
+<div id="form-container">
+  <!-- Existing forms here -->
+</div>
+
+<script>
+  const formContainer = document.getElementById('form-container');
+  const addFormBtn = document.getElementById('add-form-btn');
+  const searchInput = document.getElementById('search-input');
+  let formCount = 1; // Initialize form count
+
+  // Add existing forms from local storage
+  for (let i = 1; i <= localStorage.getItem('formCount'); i++) {
+    const formData = JSON.parse(localStorage.getItem(`form${i}-data`));
+    if (formData) {
+      addForm(formData);
+    }
+  }
+
+  addFormBtn.addEventListener('click', function() {
+    addForm();
+  });
+
+  searchInput.addEventListener('input', function() {
+    filterForms(searchInput.value.toLowerCase());
+  });
+
+  function addForm(formData = null) {
+    // Create new form element
+    const newForm = document.createElement('form');
+    newForm.id = `form${formCount}`;
+
+    // Add form HTML code
+    newForm.innerHTML = `
+	<br>
+	<div class="cardmother">
+      <div class="card">
+        <label for="nombre${formCount}">Nombre:</label>
+        <input type="text" id="nombre${formCount}" name="nombre">
+      </div>
+
+      <div class="card">
+        <label for="tipo${formCount}">Tipo:</label>
+        <select id="tipo${formCount}" name="tipo">
+          <option value="option1">Bacteria gram positiva</option>
+          <option value="option2">Bacteria gram negativa</option>
+          <option value="option3">Bacteria otra</option>
+	    <option value="option4">Virus ADN</option>
+	    <option value="option5">Virus ARN</option>
+	    <option value="option6">Hongo</option>
+	    <option value="option7">Protozoo</option>
+	    <option value="option8">Helminto</option>
+	    <option value="option9">Artrópodo</option>
+        </select>
+      </div>
+
+      <div class="card">
+        <label for="clinica${formCount}">Clínica:</label>
+        <input type="text" id="clinica${formCount}" name="clinica">
+      </div>
+
+      <div class="card">
+        <label for="palabras${formCount}">Palabras clave:</label>
+        <input type="text" id="palabras${formCount}" name="palabras">
+      </div>
+
+      <button type="submit">Save</button>
+      <button type="button" class="delete-form-btn">Delete</button>
+	</div>
+    `;
+
+    // If form data is available, pre-fill form fields
+    if (formData) {
+      const nombreInput = newForm.querySelector('input[name="nombre"]');
+      const tipoSelect = newForm.querySelector('select[name="tipo"]');
+      const clinicaInput = newForm.querySelector('input[name="clinica"]');
+      const palabrasInput = newForm.querySelector('input[name="palabras"]');
+      nombreInput.value = formData.nombre;
+      tipoSelect.value = formData.tipo;
+      clinicaInput.value = formData.clinica;
+      palabrasInput.value = formData.palabras;
+    } 
+
+ // Add event listener to save form data to local storage on submit
+    newForm.addEventListener('submit', function(event) {
+      event.preventDefault();
+      const nombreInput = newForm.querySelector('input[name="nombre"]');
+      const tipoSelect = newForm.querySelector('select[name="tipo"]');
+	const clinicaInput = newForm.querySelector('input[name="clinica"]');
+      const palabrasInput = newForm.querySelector('input[name="palabras"]');
+      localStorage.setItem(newForm.id + '-data', JSON.stringify({
+        nombre: nombreInput.value,
+        tipo: tipoSelect.value,
+	  clinica: clinicaInput.value,
+	  palabras: palabrasInput.value,
+      }));
+    });
+
+    // Add event listener to delete form and its data from local storage
+    const deleteBtn = newForm.querySelector('.delete-form-btn');
+    deleteBtn.addEventListener('click', function() {
+      localStorage.removeItem(newForm.id + '-data');
+      newForm.remove();
+    });
+
+    // Add new form element to DOM
+    formContainer.appendChild(newForm);
+
+    // Increment form count and update local storage
+    formCount++;
+    localStorage.setItem('formCount', formCount);
+  }
+function filterForms(searchValue) {
+  const forms = formContainer.querySelectorAll('form');
+  forms.forEach(function(form) {
+    const fields = form.querySelectorAll('input[name="nombre"], select[name="tipo"], input[name="clinica"], input[name="palabras-clave"]');
+    let match = false;
+    fields.forEach(function(field) {
+      const fieldText = field.value.toLowerCase();
+      const searchWords = searchValue.toLowerCase().split(' ');
+      if (searchWords.every(word => fieldText.includes(word))) {
+        match = true;
+      }
+    });
+    if (match) {
+      form.style.display = '';
+    } else {
+      form.style.display = 'none';
+    }
+  });
+}
+</script>
+</body>
+</html>
